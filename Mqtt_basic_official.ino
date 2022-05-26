@@ -4,8 +4,8 @@
 #include "DHT.h"
 
 //Conexões
-byte mac[]    = {  0xEE, 0xED, 0xBA, 0xFE, 0xFE, 0xCC };
-IPAddress ip(172, 19, 0, 51);
+byte mac[]    = { 0xEE, 0xED, 0xBA, 0xFE, 0xFE, 0xAA };
+IPAddress ip(172, 19, 0, 52);
 IPAddress myDns(8, 8, 8, 8);
 IPAddress gateway(172, 19, 0, 1);
 IPAddress subnet(255, 255, 0, 0);
@@ -21,6 +21,8 @@ DHT dht(DHTPIN, DHTTYPE);
 // Sensor de Luz
 #define sensor A0
 int sensorValue;
+
+const int pinData = 7;
 
 void callback(char* topic, byte* payload, unsigned int length) {
   Serial.print("Message arrived [");
@@ -40,12 +42,12 @@ void reconnect() {
   while (!client.connected()) {
     Serial.print("Tentativa MQTT para conexão...");
     // Attempt to connect
-    if (client.connect("grupo03")) {
+    if (client.connect("grupo04","alunos","$3nh@321!")) {
       Serial.println(" Conectado");
       // Once connected, publish an announcement...
-
+      // client.publish("grupo04","teste");
       // ... and resubscribe
-      // client.subscribe("inTopic");
+      // client.subscribe("grupo04/rele");
     } else {
       Serial.print(" Falha na Conexão, rc=");
       Serial.print(client.state());
@@ -58,7 +60,7 @@ void reconnect() {
 
 void setup()
 {
-  Serial.begin(57600);
+  Serial.begin(9600);
 
   client.setServer(server, 1883);
   client.setCallback(callback);
@@ -77,33 +79,9 @@ void loop()
   }
   client.loop();
 
-  // temperatura
-
-  float h = dht.readHumidity();
-  // Read temperature as Fahrenheit (isFahrenheit = true)
-  float f = dht.readTemperature(true);
-  float t = dht.readTemperature();
-  String temp = String (t);
-  String umi = String (h);
-  // testa se retorno é valido, caso contrário algo está errado.
-  if (isnan(h) || isnan(t) || isnan(f)) {
-    Serial.println("Falha na leitura DHT -> Sem Temperatura");
-    delay(1000);
-    return;
-  }
-  Serial.print(F("Umidade: "));
-  Serial.print(h);
-  Serial.print(" || Temperatura: ");
-  Serial.print(t);
-  Serial.println(" *C");
-
-  //Luz
-  sensorValue = analogRead(A0);
-  Serial.print("Valor do Sensor = ");
-  Serial.println(sensorValue);
-
-  client.publish("grupo03/temp", temp.c_str());
-  client.publish("grupo03/umi", umi.c_str());
+  // client.publish("grupo04/rele", "Funcionando");
+  client.subscribe("grupo04/rele");
+  
   delay(3600);
 
 }
